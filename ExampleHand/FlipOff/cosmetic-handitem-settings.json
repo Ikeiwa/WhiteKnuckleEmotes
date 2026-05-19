@@ -1,0 +1,31 @@
+{
+    "id": "flip-them-off",
+    "cosmeticName": "Flip Off",
+    "author": "Ikeiwa",
+    "description": "You finally give a frick.",
+    "credits": "",
+    "swapSprites": [],
+    "globalMaterialBase": "",
+    "forceGlobalMaterialOntoHands": true,
+    "useCustomStaminaColor": false,
+    "customStaminaColor": {
+        "r": 0.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+    },
+    "interactSwaps": [],
+    "emotes": [
+        {
+            "id": "flipoff",
+            "name": "Flip Off",
+            "spriteName": "HND_E1",
+            "position": {
+                "x": 0.0,
+                "y": 0.3,
+                "z": 0.0
+            },
+            "sound": "SND_E1"
+        }
+    ]
+}

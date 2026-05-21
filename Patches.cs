@@ -13,7 +13,13 @@ namespace WhiteKnuckleEmotes;
 
 public static class Patches
 {
-    private static bool[] _playingEmote;
+    private class HandState
+    {
+        public int CurrentEmote = -1;
+        public Vector3 EmoteOffset;
+    }
+
+    private static HandState[] _handStates;
     private static Dictionary<string, Dictionary<string, AudioClip>> _emoteSounds = new();
     
     [Serializable]
@@ -35,7 +41,9 @@ public static class Patches
     {
         static void Postfix(ENT_Player __instance)
         {
-            _playingEmote = new bool[__instance.hands.Length];
+            _handStates = new HandState[__instance.hands.Length];
+            for(int i=0 ;i<_handStates.Length;i++)
+                _handStates[i] = new HandState();
         }
     }
 
@@ -113,10 +121,11 @@ public static class Patches
         {
             if (interacting || !canInteract || !curhand.IsFree())
             {
-                if (_playingEmote[curhand.id])
+                if (_handStates[curhand.id].CurrentEmote != -1)
                 {
-                    curhand.GetViewSway().targetOffset = Vector3.zero;
-                    _playingEmote[curhand.id] = false;
+                    if(_handStates[curhand.id].EmoteOffset == curhand.GetViewSway().targetOffset)
+                        curhand.GetViewSway().targetOffset = Vector3.zero;
+                    _handStates[curhand.id].CurrentEmote = -1;
                 }
 
                 return;
@@ -145,7 +154,7 @@ public static class Patches
                     curhand.GetViewSway().targetOffset =
                         Vector3.Scale(emote.position, curhand.handSprite.transform.localScale);
 
-                    if (!_playingEmote[curhand.id] && _emoteSounds.ContainsKey(cosmetic.cosmeticData.id) &&
+                    if (_handStates[curhand.id].CurrentEmote == -1 && _emoteSounds.ContainsKey(cosmetic.cosmeticData.id) &&
                         _emoteSounds[cosmetic.cosmeticData.id].ContainsKey(emote.id))
                     {
                         var clip = _emoteSounds[cosmetic.cosmeticData.id][emote.id];
@@ -153,17 +162,19 @@ public static class Patches
                             AudioManager.PlaySound(clip, curhand.handModel);
                     }
 
-                    _playingEmote[curhand.id] = true;
+                    _handStates[curhand.id].CurrentEmote = i;
+                    _handStates[curhand.id].EmoteOffset = curhand.GetViewSway().targetOffset;
                     playingEmote = true;
                     break;
                 }
 
                 if (!playingEmote)
                 {
-                    if (_playingEmote[curhand.id])
+                    if (_handStates[curhand.id].CurrentEmote != -1)
                     {
-                        curhand.GetViewSway().targetOffset = Vector3.zero;
-                        _playingEmote[curhand.id] = false;
+                        if(_handStates[curhand.id].EmoteOffset == curhand.GetViewSway().targetOffset)
+                            curhand.GetViewSway().targetOffset = Vector3.zero;
+                        _handStates[curhand.id].CurrentEmote = -1;
                     }
                 }
             }
